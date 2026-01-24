@@ -11,7 +11,7 @@ Configurar un sistema completo de streaming de audio utilizando:
 - Un mountpoint personalizado (`/josep`)  
 - Validación desde un navegador externo  
 
----
+
 
 ## 2. Instalación de Icecast
 
@@ -39,9 +39,9 @@ Acceso al panel web:
 http://IP_DEL_SERVIDOR:8000
 ```
 
----
 
-## ⚙️ 3. Configuración de Icecast
+
+## 3. Configuración de Icecast
 
 Archivo principal:
 
@@ -62,17 +62,17 @@ Tras modificarlo:
 sudo systemctl restart icecast2
 ```
 
----
 
-## 🎚️ 4. Instalación de Mixxx
+
+## 4. Instalación de Mixxx
 
 ```bash
 sudo apt install mixxx
 ```
 
----
 
-## 📡 5. Configuración de Mixxx para emitir
+
+## 5. Configuración de Mixxx para emitir
 
 En **Preferences → Live Broadcasting**:
 
@@ -87,7 +87,7 @@ En **Preferences → Live Broadcasting**:
 Para iniciar la emisión:  
 **Enable Live Broadcasting**
 
----
+
 
 ## 6. Validación de la emisión
 
@@ -109,7 +109,3 @@ http://IP_DEL_SERVIDOR:8000/josep
 ```
 
 Si se escucha, la emisión funciona correctamente.
-
----
-
-
