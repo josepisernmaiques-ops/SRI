@@ -1,0 +1,106 @@
+
+---
+
+# **CHULETA STREAMING – ULTRA COMPACTA (Markdown)**
+
+## **1. Descarga vs Streaming**
+- **Descarga:** se baja el archivo completo.
+- **Streaming:** flujo continuo; solo se envía lo que se consume.
+
+---
+
+## **2. Topologías**
+**Unicast:**  
+BW_total = BW_stream × Nº usuarios
+
+**Multicast:**  
+BW_servidor = BW_stream
+
+---
+
+## **3. TCP vs UDP**
+**TCP:** fiable, retransmite, más latencia.  
+**UDP:** no fiable, mínima latencia.
+
+---
+
+## **4. QoS**
+**Jitter:** variación en llegada de paquetes.  
+**Buffer:** absorbe jitter; más buffer = más retraso.  
+**Burst-on-Connect:** ráfaga inicial para llenar buffer rápido.
+
+---
+
+## **5. Protocolos**
+- **HTTP Legacy (Icecast/ICY):** flujo continuo por TCP.  
+- **HLS/DASH:** chunks, calidad adaptativa.  
+- **RTMP:** ingestión (OBS).  
+- **RTSP:** cámaras IP.  
+- **WebRTC:** videollamadas, muy baja latencia.
+
+---
+
+## **6. Códecs**
+**Con pérdida:** MP3, AAC, H.264, H.265.  
+**Sin pérdida:** WAV, FLAC.
+
+---
+
+## **7. Audio digital**
+- Frecuencia: 44.1 kHz / 48 kHz  
+- Profundidad: 16–24 bits  
+- Canales: 1 (mono), 2 (estéreo)
+
+---
+
+## **8. Fórmulas de audio**
+
+### **Peso WAV (sin comprimir)**
+Peso_bits = Frecuencia × Bits × Canales × Segundos  
+Bytes = bits / 8  
+MB = Bytes / 1.000.000
+
+### **Bitrate**
+Bitrate = Frecuencia × Bits × Canales
+
+### **Peso comprimido (MP3/AAC)**
+Peso = Bitrate × Tiempo
+
+---
+
+## **9. Vídeo**
+
+### **Peso sin comprimir**
+Peso = (Ancho × Alto) × Profundidad × FPS × Tiempo
+
+### **Peso comprimido**
+Peso = Bitrate × Tiempo
+
+---
+
+## **10. Bitrates recomendados**
+- 4K: 25–45 Mbps  
+- 1080p: 6–9 Mbps  
+- 720p: 3–4 Mbps  
+- 480p: 1 Mbps  
+- 360p: 700 kbps
+
+---
+
+## **11. Usuarios simultáneos**
+N = BW_total / BW_stream
+
+---
+
+## **12. Porcentaje de uso**
+Porcentaje = (bitrate / capacidad) × 100
+
+---
+
+## **13. Conversión rápida**
+- 1 Byte = 8 bits  
+- 1 MB = 1.000.000 Bytes  
+- 1 GB = 1.000 MB  
+- 1 min = 60 s
+
+---
