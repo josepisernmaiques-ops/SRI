@@ -1,6 +1,6 @@
 ---
 
-# # Apuntes de Streaming – 2º ASIX / ASIR**  
+# # Apuntes de Streaming – 2º ASIX / ASIR
 
 ---
 
