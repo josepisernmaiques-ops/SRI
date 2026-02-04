@@ -1,283 +1,303 @@
 ---
 
-#  **CHULETA STREAMING – TEORÍA + FÓRMULAS + MINI‑PRÁCTICA (Markdown)**
+# # Apuntes de Streaming – 2º ASIX / ASIR**  
+Versión en **Markdown** basada íntegramente en tu PDF.
 
 ---
 
-# # 1. Descarga directa vs Streaming
+# ## **1. Descarga directa vs Streaming**
 
 ### **Descarga directa**
-- Se descarga el archivo completo (ej. 100 MB).
-- Aunque el usuario vea solo 2 minutos, el servidor envía **todo**.
+- El usuario solicita un fichero completo (ej. 100 MB, 10 minutos).  
+- Se descarga entero antes o durante la reproducción.  
+- Aunque el usuario solo vea 2 minutos, **el servidor entrega los 100 MB completos**.  
 - Se almacena localmente.
 
 ### **Streaming**
-- Flujo continuo, sin guardar el archivo completo.
-- El servidor solo envía lo que el usuario consume.
-- Menor uso de ancho de banda.
-
-**Ejemplo práctico:**  
-Canción de 100 MB → usuario escucha 2 min:  
-- Descarga: servidor envía 100 MB  
-- Streaming: servidor envía solo lo reproducido (ej. 8 MB)
+- Datos enviados en flujo constante.  
+- No hay almacenamiento permanente.  
+- Solo se consume el ancho de banda equivalente al tiempo reproducido.  
+- Si el usuario ve 2 minutos, el servidor solo envía esos 2 minutos.
 
 ---
 
-# # 2. Topologías de red
+# ## **2. Topología de red**
 
-## **Unicast**
-- Conexión 1 a 1.
-- Si hay 100 oyentes → 100 conexiones.
-- **Fórmula:**  
-  \[
-  BW_{total} = BW_{stream} \times N
-  \]
+### **Unicast**
+- Conexión **1 a 1** (modelo estándar de Internet).  
+- Si hay 100 oyentes, el servidor abre **100 sockets TCP** y envía el flujo 100 veces.  
+- **Cálculo de ancho de banda:**
 
-**Ejemplo:**  
-128 kbps × 100 oyentes = **12.800 kbps = 12,8 Mbps**
+\[
+BW_{total} = BW_{stream} \times N_{usuarios}
+\]
+
+- Desventaja: **poco escalable**.
+
+### **Multicast**
+- El servidor envía a una **dirección multicast** (224.0.0.0 – 239.255.255.255).  
+- Los routers replican el paquete solo si hay suscriptores.  
+- Desventaja: muchos routers **bloquean multicast** → solo viable en redes internas.
+
+### **Broadcast**
+- Envío a todos los dispositivos de la red local.  
+- No se usa para streaming en Internet.
 
 ---
 
-## **Multicast**
-- El servidor envía **una sola copia**.
-- Los routers replican solo si hay suscriptores.
-- Solo funciona bien en redes internas.
+# ## **3. Capa de transporte: TCP vs UDP**
 
-**Ejemplo:**  
-128 kbps a 100 oyentes → **128 kbps salen del servidor**
+### **TCP**
+- Si un paquete se pierde, el servidor lo reenvía (ACK/NACK).  
+- Ventajas:
+  - Calidad garantizada.  
+  - Pasa firewalls, NAT y proxies sin problemas.  
+- Desventajas:
+  - **Alta latencia** por retransmisiones.
 
----
-
-# # 3. TCP vs UDP
-
-## **TCP**
-- Fiable (retransmite paquetes).
-- Más latencia.
-- Pasa bien por firewalls.
-- Usado por: Icecast, HLS, Netflix, Spotify, Twitch receptor.
-
-## **UDP**
-- No retransmite → mínima latencia.
-- Puede perder calidad.
-- Usado por: WebRTC, videollamadas, juegos, RTSP.
+### **UDP**
+- No hay retransmisión.  
+- Ventajas:
+  - **Latencia mínima**.  
+- Desventajas:
+  - Pérdida de calidad.  
+  - Problemas con NAT/firewalls.
 
 ---
 
-# # 4. QoS: Jitter y Buffer
+# ## **4. QoS: Jitter y Buffer**
 
-## **Jitter**
-- Variación en el tiempo de llegada de paquetes.
-- Si supera el buffer → cortes.
+### **Jitter**
+Variación en el tiempo de llegada de los paquetes.
 
-## **Buffer**
-- Memoria temporal para absorber jitter.
-- Más buffer = más estabilidad, más retraso.
+Ejemplo:
+- Paquete 1 → 20 ms  
+- Paquete 2 → 150 ms  
+- Paquete 3 → 20 ms  
 
-## **Burst-on-Connect**
-- El servidor envía una ráfaga inicial rápida para llenar el buffer.
-- Reduce el tiempo hasta que empieza a sonar.
+Si el jitter supera el tamaño del buffer → **cortes (buffer underrun)**.
 
----
+### **Buffer**
+Memoria temporal en cliente/servidor.
 
-# # 5. Protocolos de Streaming
+- Función: absorber jitter.  
+- A mayor buffer → más estabilidad pero **más latencia**.
 
-## **HTTP Legacy (Icecast – ICY)**
-- TCP.
-- Flujo continuo.
-- Formatos: MP3, OGG, AAC.
-- Puertos: 80, 443, 8000.
-
-## **HTTP Adaptativo (HLS / DASH)**
-- TCP.
-- Divide el vídeo en **chunks** de 2–10 s.
-- Calidad adaptativa.
-- Ideal para CDN.
-
-## **Real-Time**
-- **RTMP:** ingestión (OBS → servidor).  
-- **RTSP:** cámaras IP (UDP + TCP).  
-- **WebRTC:** videollamadas, <0.5 s de latencia.
+### **Burst-on-Connect (Icecast)**
+- Problema: llenar el buffer inicial tardaría varios segundos.  
+- Solución: el servidor envía los primeros KB a **máxima velocidad** (ej. 10×).  
+- Resultado: reproducción casi instantánea.
 
 ---
 
-# # 6. Códecs
+# ## **5. Protocolos de Streaming**
 
-## **Con pérdida**
-- Eliminan información irrelevante.
-- Ejemplo: MP3, AAC, H.264, H.265.
-
-## **Sin pérdida**
-- No eliminan información.
-- Ejemplo: WAV, FLAC.
+## **5.1 Capa de transporte**
+- TCP → calidad, latencia alta.  
+- UDP → latencia baja, pérdida de calidad.
 
 ---
 
-# # 7. Audio digital
+## **5.2 Capa de aplicación (3 modelos)**
 
-- **Frecuencia de muestreo:** 44.1 kHz / 48 kHz  
-- **Profundidad:** 16–24 bits  
-- **Canales:** mono (1), estéreo (2)
+### **1. HTTP Legacy (Icecast2)**
+- Protocolo: **ICY**  
+- Conexión TCP continua.  
+- Puertos: 80, 443, 8000  
+- Formatos: MP3, OGG, AAC  
+- Flujo continuo de bytes.
 
----
+### **2. HTTP Adaptativo**
+- Protocolos: **HLS**, **MPEG-DASH**  
+- El servidor trocea el vídeo en **chunks** de 2–10 s.  
+- Formatos: .ts, .m4s  
+- Ventaja: **calidad adaptativa** mediante manifest.
 
-# # 8. Cálculo de peso en audio (WAV sin comprimir)
-
-### **Fórmula**
-\[
-Peso_{bits} = Frecuencia \times Bits \times Canales \times Segundos
-\]
-
-\[
-Bytes = \frac{bits}{8}
-\]
-
-\[
-MB = \frac{Bytes}{1.000.000}
-\]
-
-### **Ejemplo práctico**
-5 min, 44.1 kHz, 16 bits, estéreo:
-
-\[
-44100 \times 16 \times 2 \times 300 = 423.360.000\ bits
-\]
-
-\[
-423.360.000 / 8 = 52.920.000\ Bytes
-\]
-
-\[
-52.920.000 / 1.000.000 = 52,92\ MB
-\]
+### **3. Real-Time**
+- **RTMP**: TCP, usado para enviar vídeo desde OBS a YouTube/Twitch.  
+- **RTSP**: cámaras IP, usa UDP para datos y TCP para control.  
+- **WebRTC**: videoconferencia, P2P, UDP, <0.5 s de latencia.
 
 ---
 
-# # 9. Cálculo de bitrate en audio
+# ## **6. Cuadro resumen de protocolos**
 
-### **Fórmula**
+| Protocolo | Base | Latencia | Uso | Firewall | Caché CDN |
+|----------|------|----------|------|----------|-----------|
+| Icecast (ICY) | TCP/HTTP | 10–30 s | Radio online | Muy fácil | Difícil |
+| HLS / DASH | TCP/HTTP | 15–45 s | Netflix, YouTube | Muy fácil | Excelente |
+| RTMP | TCP | 2–5 s | Ingesta (OBS → servidor) | Medio | No |
+| WebRTC | UDP/TCP | <0.5 s | Videoconferencia | Complejo | No |
+| RTSP | UDP+TCP | <1 s | Cámaras IP | Problemas NAT | No |
+
+---
+
+# ## **7. Icecast2**
+
+- Servidor de streaming de código abierto.  
+- Recibe audio de una fuente (Mixxx, Butt) y lo distribuye a oyentes.  
+- No genera contenido, solo lo retransmite.  
+- Formatos: MP3, OGG.  
+- Usa **mountpoints** (ej. /radio).
+
+### Instalación
+```
+apt update
+apt install icecast2
+```
+
+### Configuración
+- Puerto: 8000  
+- Contraseñas: source-password, admin-password  
+- Archivo: `icecast.xml`
+
+---
+
+# ## **8. Mixxx (emisor)**
+
+Instalación:
+```
+add-apt-repository ppa:mixxx/mixxx
+apt update
+apt install mixxx
+```
+
+Configuración de emisión:
+- Tipo: Icecast2  
+- Montaje: /manu  
+- Servidor: 127.0.0.1  
+- Puerto: 8000  
+- Usuario: source  
+- Contraseña: (la configurada)
+
+---
+
+# ## **9. Códecs**
+
+### ¿Qué es un códec?
+Algoritmo que **comprime y descomprime** audio/vídeo.
+
+### Ejemplos
+- Audio: MP3, AAC, Vorbis, WAV  
+- Vídeo: H.264, H.265, AV1  
+
+### ¿Por qué?
+- Reducir tamaño sin perder calidad perceptible.
+
+---
+
+# ## **10. Audio digital**
+
+### **Frecuencia de muestreo**
+- “Fotos” por segundo de la onda.  
+- Estándar: **44.1 kHz**.
+
+### **Profundidad de bits**
+- Calidad de cada muestra.  
+- Estándar: **16 bits** (CD).
+
+### **Canales**
+- Mono, estéreo, 5.1, etc.
+
+---
+
+# ## **11. Códecs con pérdida / sin pérdida**
+
+### Con pérdida
+- Eliminan información irrelevante.  
+- Ejemplo: MP3.
+
+### Sin pérdida
+- Igual que un ZIP: no se pierde información.  
+- Ejemplo: FLAC, WAV.
+
+---
+
+# ## **12. Cálculo de peso (audio)**
+
+### Fórmula:
 \[
-Bitrate = Frecuencia \times Bits \times Canales
+Peso = Frecuencia \times Bits \times Canales \times Segundos
 \]
 
-### **Ejemplo**
-48 kHz, 24 bits, estéreo:
-
+Ejemplo del PDF:
 \[
-48.000 \times 24 \times 2 = 2.304.000\ bps = 2,304\ Mbps
+44100 \times 16 \times 2 \times 180 = 254016000\ \text{bits}
 \]
 
 ---
 
-# # 10. Audio comprimido (MP3/AAC)
+# ## **13. Cálculo de peso (vídeo)**
 
-### **Fórmula**
-\[
-Peso = Bitrate \times Tiempo
-\]
-
-### **Ejemplo**
-Canción 4 min a 128 kbps:
-
-\[
-128 \times 240 = 30.720\ kb
-\]
-
-\[
-30.720 / 8 = 3.840\ kB = 3,84\ MB
-\]
-
----
-
-# # 11. Vídeo sin comprimir
-
-### **Fórmula**
+### Sin comprimir:
 \[
 Peso = (Ancho \times Alto) \times Profundidad \times FPS \times Tiempo
 \]
 
----
-
-# # 12. Vídeo comprimido
-
-### **Fórmula**
+### Con códec:
 \[
 Peso = Bitrate \times Tiempo
 \]
 
 ---
 
-# # 13. Bitrates recomendados (vídeo)
+# ## **14. Bitrates recomendados (vídeo)**
 
-| Resolución | Recomendado |
-|-----------|-------------|
-| 4K        | 25–45 Mbps |
-| 1080p     | 6–9 Mbps |
-| 720p      | 3–4 Mbps |
-| 480p      | 1 Mbps |
-| 360p      | 700 kbps |
-
----
-
-# # 14. Usuarios simultáneos
-
-### **Unicast**
-\[
-N = \frac{BW_{total}}{BW_{stream}}
-\]
-
-### **Multicast**
-\[
-BW_{servidor} = BW_{stream}
-\]
-
-**Ejemplo:**  
-1000 Mbps / 40 Mbps = **25 usuarios**
+| Resolución | Calidad | Mínimo | Recomendado |
+|------------|---------|--------|-------------|
+| 4K | Ultra HD | 15 Mbps | 25–45 Mbps |
+| 1080p | Alta | 4 Mbps | 6–9 Mbps |
+| 720p | Media | 1.5 Mbps | 3–4 Mbps |
+| 480p | SD | 500 kbps | 1 Mbps |
+| 360p | Baja | 400 kbps | 700 kbps |
 
 ---
 
-# # 15. Porcentaje de uso de la línea
+# ## **15. Ejercicios del PDF**
 
-### **Fórmula**
-\[
-\% = \left( \frac{bitrate}{capacidad} \right) \times 100
-\]
+Incluidos:
 
-**Ejemplo:**  
-25 Mbps en línea de 300 Mbps:
-
-\[
-25/300 \times 100 = 8,33\%
-\]
+- Cálculo de bitrate RAW  
+- Cálculo de almacenamiento  
+- Porcentaje de uso de línea  
+- Saturación de red  
+- Número de oyentes  
+- Comparación de códecs  
+- Simulación de perfiles de streaming
 
 ---
 
-# # 16. Conversión de unidades
+# ## **16. Contenedores de vídeo**
 
-## **Bits ↔ Bytes**
-- 1 Byte = 8 bits  
-- bits → bytes = dividir entre 8  
-- bytes → bits = multiplicar por 8  
+Incluyen:
+- Pistas de vídeo  
+- Pistas de audio  
+- Subtítulos  
+- Metadatos  
 
-## **k, M, G**
-- k = \(10^3\)  
-- M = \(10^6\)  
-- G = \(10^9\)
-
-### **Regla de oro**
-- Para pasar a unidad **más grande** → dividir  
-- Para pasar a unidad **más pequeña** → multiplicar  
+Ejemplos: MP4, MKV, MOV, OGG.
 
 ---
 
-# # 17. Mini‑resumen final (para memorizar)
+# ## **17. FFmpeg (práctica)**
 
-- **Unicast:** BW × usuarios  
-- **Multicast:** 1 copia  
-- **Peso WAV:** Freq × Bits × Canales × Segundos  
-- **Bitrate:** Freq × Bits × Canales  
-- **Peso comprimido:** Bitrate × Tiempo  
-- **Porcentaje:** bitrate / capacidad × 100  
-- **bits ↔ bytes:** divide o multiplica por 8  
-- **k/M/G:** divide o multiplica por 1000  
+### Remuxing (cambiar contenedor sin recodificar)
+```
+ffmpeg -i original.mp4 -c:v copy -c:a copy salida.mkv
+```
+
+### Re-encode H.264 y H.265
+```
+ffmpeg -i original.mp4 -c:v libx264 -b:v 2M -c:a copy h264.mp4
+ffmpeg -i original.mp4 -c:v libx265 -b:v 2M -c:a copy h265.mp4
+```
 
 ---
+
+# ## **18. Preguntas finales del PDF**
+
+- ¿Cuántas horas de vídeo HD (2 Mbps) caben en 500 GB?  
+- ¿Cuántos usuarios pueden ver 400 kbps antes de saturar el 80% de 100 Mbps?
+
+---
+
