@@ -1,7 +1,6 @@
 ---
 
 # # Apuntes de Streaming – 2º ASIX / ASIR**  
-Versión en **Markdown** basada íntegramente en tu PDF.
 
 ---
 
